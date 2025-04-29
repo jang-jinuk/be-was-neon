@@ -19,7 +19,7 @@ public class FileContentUtil {
     public static Optional<byte[]> getFileContent(String path) {
         Optional<byte[]> body = Optional.empty();
 
-        try (FileInputStream fis = new FileInputStream("src/main/resources/static/" + path)) {
+        try (FileInputStream fis = new FileInputStream("src/main/resources/" + path)) {
             byte[] data = fis.readAllBytes();
             body = Optional.of(data);
         } catch (IOException e) {
