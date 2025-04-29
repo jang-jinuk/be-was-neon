@@ -18,14 +18,15 @@ public class FileContentUtil {
 
     public static Optional<byte[]> getFileContent(String path) {
         Optional<byte[]> body = Optional.empty();
-
         try (FileInputStream fis = new FileInputStream("src/main/resources/" + path)) {
             byte[] data = fis.readAllBytes();
             body = Optional.of(data);
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
+        logger.debug("=====================request file path: {}===================", path);
 
+        logger.debug("====================={}===================", new String(body.get()));
         return body;
     }
 

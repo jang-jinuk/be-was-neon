@@ -1,5 +1,7 @@
 package webserver.http.response.handler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import webserver.http.common.ContentType;
 import webserver.http.common.StatusCode;
 import webserver.http.request.Request;
@@ -15,8 +17,10 @@ import java.util.Optional;
 import static webserver.http.common.ContentType.HTML;
 
 public class StaticHandler implements Handler {
+    private static final Logger logger = LoggerFactory.getLogger(StaticHandler.class);
     @Override
     public Response handle(Request request) {
+        logger.debug("=====================Starting Handling===================");
         ResponseBuilder responseBuilder;
         String path = request.getRequestLine("path");
         CookieParams cookieParams = request.getCookie();
@@ -32,6 +36,7 @@ public class StaticHandler implements Handler {
             responseBuilder = new ResponseBuilder(StatusCode.OK, body.get(), contentType, getCurrentSession(cookieParams));
         }
 
+        logger.debug("=====================End Handling===================");
         return responseBuilder.build();
     }
 

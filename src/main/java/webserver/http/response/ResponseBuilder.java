@@ -1,12 +1,16 @@
 package webserver.http.response;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import webserver.http.common.StatusCode;
+import webserver.http.response.handler.DynamicHandler;
 import webserver.http.session.Session;
 import webserver.http.template.TemplateEngine;
 
 import java.util.Optional;
 
 public class ResponseBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(ResponseBuilder.class);
 
     private final StatusCode statusCode;
     private byte[] header;
@@ -40,10 +44,14 @@ public class ResponseBuilder {
         switch (statusCode) {
             case OK, NOT_FOUND, BAD_REQUEST, UNAUTHORIZED -> {
                 body = templateEngine.render();
+                logger.debug("=====================render body: {}===================", new String(body));
                 writeDefaultMessage();
             }
             case FOUND -> writeRedirectMessage();
         }
+
+        logger.debug("=====================header: {}===================", new String(header));
+        logger.debug("=====================body: {}===================", new String(body));
 
         return new Response(header, body);
     }

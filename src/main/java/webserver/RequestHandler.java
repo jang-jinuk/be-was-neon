@@ -2,6 +2,7 @@ package webserver;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 
 import webserver.http.request.Request;
 import org.slf4j.Logger;
@@ -26,12 +27,17 @@ public class RequestHandler implements Runnable {
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             RequestParser requestParser = new RequestParser(in);
             Request request = requestParser.parseRequest();
+            logger.debug("==========================HTTP Request parsing complete==========================");
 
             Dispatcher dispatcher = new Dispatcher(request);
             Handler handler = dispatcher.dispatch();
+            logger.debug(handler.getClass().toString());
+            logger.debug("==========================Selected Handler complete==========================");
 
             Response response = handler.handle(request);
             byte[] responseMessage = response.getResponseMessage();
+            logger.debug("response message: {}", new String(responseMessage));
+            logger.debug("==========================Write response Message==========================");
 
             out.write(responseMessage, 0, responseMessage.length);
             out.flush();

@@ -2,7 +2,10 @@ package webserver.http.template;
 
 import db.Database;
 import model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.FileContentUtil;
+import webserver.http.response.handler.DynamicHandler;
 import webserver.http.session.Session;
 
 import java.util.Collection;
@@ -11,7 +14,7 @@ import java.util.Optional;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TemplateEngine {
-
+    private static final Logger logger = LoggerFactory.getLogger(TemplateEngine.class);
     private String templateHtml;
     private final Optional<Session> currentSession;
 
@@ -42,6 +45,7 @@ public class TemplateEngine {
             if (fragment.getLoginStatus() == currentSession.isPresent()) {
                 byte[] content = FileContentUtil.getFileContent("templates/" + fragment.getTemplatePath())
                         .orElse(new byte[0]);
+
                 return new String(content);
             }
         }
