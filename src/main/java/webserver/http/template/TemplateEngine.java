@@ -22,6 +22,11 @@ public class TemplateEngine {
 
     public byte[] render() {
         templateHtml = renderHeader();
+
+        if (currentSession.isPresent()) {
+            templateHtml = renderLoginUserName();
+        }
+
         return templateHtml.getBytes(UTF_8);
     }
 
@@ -40,4 +45,10 @@ public class TemplateEngine {
         }
         return "";
     }
+
+    private String renderLoginUserName() {
+        User loginUser = (User) currentSession.get().getAttribute("loginUser");
+        return templateHtml.replace("{{name}}", loginUser.getName());
+    }
+
 }
