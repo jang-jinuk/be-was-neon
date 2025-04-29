@@ -17,6 +17,10 @@ public class Session {
         return id;
     }
 
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
     public void setAttributes(String key, Object value) {
         attributes.put(key, value);
     }

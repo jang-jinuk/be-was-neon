@@ -1,6 +1,7 @@
 package webserver.http.session;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionContainer {
@@ -20,6 +21,13 @@ public class SessionContainer {
             }
         }
         return instance;
+    }
+
+    public Optional<Session> getCurrentSession(String loginSessionId) {
+        if (sessions.containsKey(loginSessionId)) {
+            return Optional.of(sessions.get(loginSessionId));
+        }
+        return Optional.empty();
     }
 
     public void add(Session session) {

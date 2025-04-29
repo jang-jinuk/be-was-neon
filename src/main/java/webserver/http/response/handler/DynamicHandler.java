@@ -28,6 +28,7 @@ public class DynamicHandler implements Handler {
     @Override
     public Response handle(Request request) {
         String path = request.getRequestLine("path");
+        CookieParams cookieParams = request.getCookie();
         Optional<String> sessionId = Optional.empty();
 
         try {
@@ -44,16 +45,22 @@ public class DynamicHandler implements Handler {
             }
 
         } catch (UserNotFoundException | PasswordMismatchException e) {
-            return handleError(e.getMessage());
+            return handleError(e.getMessage(), getCurrentSession(cookieParams));
         }
 
-        return new ResponseBuilder(FOUND, "/", sessionId).build();
+        return new ResponseBuilder(FOUND, "/", sessionId, getCurrentSession(cookieParams)).build();
     }
 
-    private Response handleError(String errorMessage) {
+    @Override
+    public Optional<Session> getCurrentSession(CookieParams cookieParams) {
+        SessionContainer sessionContainer = SessionContainer.getInstance();
+        return sessionContainer.getCurrentSession(cookieParams.get("sid"));
+    }
+
+    private Response handleError(String errorMessage, Optional<Session> currentSession) {
         logger.error("요청 실패: {}",errorMessage);
-        Optional<byte[]> errorBody = FileContentUtil.getFileContent("user/login_failed.html");
-        return new ResponseBuilder(UNAUTHORIZED, errorBody.get(), HTML.getContentType()).build();
+        Optional<byte[]> errorBody = FileContentUtil.getFileContent("static/user/login_failed.html");
+        return new ResponseBuilder(UNAUTHORIZED, errorBody.get(), HTML.getContentType(), currentSession).build();
     }
 
     private void createUser(Request request) {
