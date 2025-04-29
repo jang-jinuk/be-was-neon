@@ -27,6 +27,8 @@ public class TemplateEngine {
             templateHtml = renderLoginUserName();
         }
 
+        templateHtml = renderUserList();
+
         return templateHtml.getBytes(UTF_8);
     }
 
@@ -51,4 +53,18 @@ public class TemplateEngine {
         return templateHtml.replace("{{name}}", loginUser.getName());
     }
 
+    private String renderUserList() {
+        Collection<User> users = Database.findAll();
+        StringBuilder sb = new StringBuilder();
+
+        for (User user : users) {
+            byte[] content = FileContentUtil.getFileContent("templates/user_list.html").orElse(new byte[0]);
+            String userListTemplate = new String(content);
+            userListTemplate = userListTemplate.replace("{{name}}", user.getName());
+            userListTemplate = userListTemplate.replace("{{email}}", user.getEmail());
+            sb.append(userListTemplate);
+        }
+
+        return templateHtml.replace("{{user_list}}", sb.toString());
+    }
 }
