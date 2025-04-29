@@ -19,7 +19,9 @@ public class RequestLineParser {
     private String parsePath(String path, String method) {
         if (isFile(path) && isExcludeQuery(path)) {
             return path;
-        } else if (!isFile(path) && isExcludeQuery(path) && !UrlPattern.contain(method, path)) {
+        } else if (path.equals("/")) {
+            return "/index.html";
+        }else if (!isFile(path) && isExcludeQuery(path) && !UrlPattern.contain(method, path)) {
             return path + "/index.html";
         } else {
             String[] pathParts = path.split("\\?", 2);
