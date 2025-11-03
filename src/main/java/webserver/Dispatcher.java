@@ -8,15 +8,17 @@ import webserver.http.response.handler.StaticHandler;
 
 public class Dispatcher {
 
-    private Request request;
+    private final Request request;
 
     public Dispatcher(Request request) {
         this.request = request;
     }
 
     public Handler dispatch() {
+        String method = request.getRequestLine("method");
         String path = request.getRequestLine("path");
-        if (UrlPattern.contain(path)) {
+
+        if (UrlPattern.contain(method, path)) {
             return new DynamicHandler();
         }
 

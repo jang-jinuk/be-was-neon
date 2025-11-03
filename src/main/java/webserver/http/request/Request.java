@@ -2,22 +2,25 @@ package webserver.http.request;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import webserver.http.request.param.*;
 
 import java.util.Map;
 
 public class Request {
     private static final Logger logger = LoggerFactory.getLogger(Request.class);
 
-    private Map<String, String> requestLine;
-    private Map<String, String> headers;
-    private Map<String, String> body;
-    private Map<String, String> queryMap;
+    private final RequestLineParams requestLine;
+    private final HeaderParams headers;
+    private final BodyParams body;
+    private final QueryParams query;
+    private final CookieParams cookie;
 
-    public Request(Map<String, String> requestLine, Map<String, String> headers, Map<String,String> body, Map<String, String> queryMap) {
+    public Request(RequestLineParams requestLine, HeaderParams headers, BodyParams body, QueryParams query, CookieParams cookie) {
         this.requestLine = requestLine;
         this.headers = headers;
         this.body = body;
-        this.queryMap = queryMap;
+        this.query = query;
+        this.cookie = cookie;
         print();
     }
 
@@ -25,11 +28,13 @@ public class Request {
         return requestLine.get(key);
     }
 
-    public Map<String, String> getBody() {
+    public BodyParams getBody() {
         return body;
     }
 
-    public Map<String, String> getQueryMap() { return queryMap; }
+    public CookieParams getCookie() {
+        return cookie;
+    }
 
     private void print() {
         logger.debug("================Client Request==================");

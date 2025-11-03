@@ -1,20 +1,25 @@
 package webserver.http.response.handler;
 
 import db.Database;
-import exception.InvalidHttpMethodException;
+import exception.PasswordMismatchException;
+import exception.UserNotFoundException;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.FileContentUtil;
-import webserver.http.common.ContentType;
-import webserver.http.common.StatusCode;
-import webserver.http.common.UrlPattern;
+import webserver.http.request.param.BodyParams;
 import webserver.http.request.Request;
+import webserver.http.request.param.CookieParams;
 import webserver.http.response.Response;
 import webserver.http.response.ResponseBuilder;
+import webserver.http.session.Session;
+import webserver.http.session.SessionContainer;
 
-import java.util.Map;
 import java.util.Optional;
+
+import static webserver.http.common.ContentType.*;
+import static webserver.http.common.StatusCode.*;
+import static webserver.http.common.UrlPattern.*;
 
 public class DynamicHandler implements Handler {
 
@@ -23,35 +28,84 @@ public class DynamicHandler implements Handler {
     @Override
     public Response handle(Request request) {
         String path = request.getRequestLine("path");
-        String method = request.getRequestLine("method");
-        Map<String, String> body = request.getBody();
+        CookieParams cookieParams = request.getCookie();
+        Optional<String> sessionId = Optional.empty();
 
         try {
-            if (path.equals(UrlPattern.CREATE_USER.getPattern())) {
-                createUser(method, body);
+            if (path.equals(USER_CREATE.getPattern())) {
+                createUser(request);
             }
-        } catch (InvalidHttpMethodException e) {
-            logger.error(e.getMessage());
-            Optional<byte[]> errorBody = FileContentUtil.getFileContent("error/400.html");
-            return new ResponseBuilder(StatusCode.BAD_REQUEST, errorBody.get(), ContentType.HTML.getContentType()).build();
+
+            if (path.equals(USER_LOGIN.getPattern())) {
+                sessionId = login(request);
+            }
+
+            if (path.equals(USER_LOGOUT.getPattern())) {
+                logout(request);
+            }
+
+        } catch (UserNotFoundException | PasswordMismatchException e) {
+            return handleError(e.getMessage(), getCurrentSession(cookieParams));
         }
 
-        return new ResponseBuilder(StatusCode.FOUND, "/").build();
+        return new ResponseBuilder(FOUND, "/", sessionId, getCurrentSession(cookieParams)).build();
     }
 
-    private void createUser(String method, Map<String, String> body) {
+    @Override
+    public Optional<Session> getCurrentSession(CookieParams cookieParams) {
+        SessionContainer sessionContainer = SessionContainer.getInstance();
+        return sessionContainer.getCurrentSession(cookieParams.get("sid"));
+    }
 
-        if (!"POST".equals(method)) {
-            throw new InvalidHttpMethodException("지원하지 않는 HTTP 메서드입니다.");
-        }
+    private Response handleError(String errorMessage, Optional<Session> currentSession) {
+        logger.error("요청 실패: {}",errorMessage);
+        Optional<byte[]> errorBody = FileContentUtil.getFileContent("static/user/login_failed.html");
+        return new ResponseBuilder(UNAUTHORIZED, errorBody.get(), HTML.getContentType(), currentSession).build();
+    }
 
-        String userId = (body.get("userId"));
-        String password = (body.get("password"));
-        String name = (body.get("name"));
-        String email = (body.get("email"));
+    private void createUser(Request request) {
+        BodyParams body = request.getBody();
+
+        String userId = body.get("userId");
+        String password = body.get("password");
+        String name = body.get("name");
+        String email = body.get("email");
         User user = new User(userId, password, name, email);
         Database.addUser(user);
-
     }
 
+    private Optional<String> login(Request request) {
+        BodyParams body = request.getBody();
+
+        String loginUserId = body.get("userId");
+        String loginUserPw = body.get("password");
+
+        User user = Database.findUserById(loginUserId);
+
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+
+        if (!loginUserPw.equals(user.getPassword())) {
+            throw new PasswordMismatchException();
+        }
+
+        Session session = new Session();
+        session.setAttributes("loginUser", user);
+
+        SessionContainer sessionContainer = SessionContainer.getInstance();
+        sessionContainer.add(session);
+
+        return Optional.of(session.getId());
+    }
+
+    public void logout(Request request) {
+        CookieParams cookie = request.getCookie();
+        String loginUserSid = cookie.get("sid");
+
+        SessionContainer sessionContainer = SessionContainer.getInstance();
+        if (sessionContainer.containKey(loginUserSid)) {
+            sessionContainer.remove(loginUserSid);
+        }
+    }
 }

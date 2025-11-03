@@ -11,16 +11,7 @@
     <div class="container">
       <header class="header">
         <a href="/"><img src="./img/signiture.svg" /></a>
-        <ul class="header__menu">
-          <li class="header__menu__item">
-            <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
-          </li>
-          <li class="header__menu__item">
-            <a class="btn btn_ghost btn_size_s" href="/registration">
-              회원 가입
-            </a>
-          </li>
-        </ul>
+        {{header}}
       </header>
       <div class="wrapper">
         <div class="post">
@@ -114,9 +105,9 @@
             </div>
             <p class="comment__item__article">Comment 3</p>
           </li>
-          <button id="show-all-btn" class="btn btn_ghost btn_size_m">
-            모든 댓글 보기(3개)
-          </button>
+            <button id="show-all-btn" class="btn btn_ghost btn_size_m">
+              모든 댓글 보기(3개)
+            </button>
         </ul>
         <nav class="nav">
           <ul class="nav__menu">

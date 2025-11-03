@@ -2,8 +2,8 @@ package webserver.http.response;
 
 public class Response {
 
-    private byte[] header;
-    private byte[] body;
+    private final byte[] header;
+    private final byte[] body;
 
     public Response(byte[] header, byte[] body) {
         this.header = header;

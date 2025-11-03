@@ -1,4 +1,4 @@
-package webserver.http.request;
+package webserver.http.request.parser;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class QueryParser {
 
-    public Map<String, String> parseQuery(String queryString) {
+    public Map<String, String> parse(String queryString) {
         Map<String, String> queryMap = new LinkedHashMap<>();
 
         queryString = decodeQuery(queryString);
